@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amigo Secreto</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #lista-participantes { list-style-type: none; }
+    #resultado { list-style-type: none; padding: 0; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Amigo Secreto - Sorteio</h1>
+  </header>
+
+  <section class="form-section">
+    <h2>Insira os participantes:</h2>
+    <form id="form-participantes">
+      <input type="text" id="nome" placeholder="Nome do participante" required>
+      <button type="submit">Adicionar</button>
+    </form>
+    <ul id="lista-participantes"></ul>
+    <button id="sortear" disabled>Sorteio do Amigo Secreto</button>
+    <button id="resetar" style="display:none;">Resetar</button>
+  </section>
+
+  <section class="resultado-section" style="display:none;">
+    <h2>Resultado do Sorteio:</h2>
+    <ul id="resultado"></ul>
+    <button id="voltar">Voltar</button>
+  </section>
+
+  <div id="carregando" style="display:none;">
+    <p>Carregando...</p>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Amigo Secreto</p>
+  </footer>
+
+  <script>
+    let participantes = [];
+
+    document.getElementById('form-participantes').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      if (nome) {
+        participantes.push(nome);
+        const li = document.createElement('li');
+        li.textContent = nome;
+        document.getElementById('lista-participantes').appendChild(li);
+        document.getElementById('nome').value = '';
+        document.getElementById('sortear').disabled = false;
+      }
+    });
+
+    document.getElementById('sortear').addEventListener('click', function () {
+      document.getElementById('carregando').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('carregando').style.display = 'none';
+        document.querySelector('.form-section').style.display = 'none';
+        const resultadoSection = document.querySelector('.resultado-section');
+        resultadoSection.style.display = 'block';
+        const resultadoList = document.getElementById('resultado');
+        resultadoList.innerHTML = ''; // Limpa os resultados anteriores
+
+        let resultados = [];
+        let amigosSorteados = [];
+        for (let i = 0; i < participantes.length; i++) {
+          let sorteado = null;
+          do {
+            sorteado = participantes[Math.floor(Math.random() * participantes.length)];
+          } while (sorteado === participantes[i] || amigosSorteados.includes(sorteado));
+          amigosSorteados.push(sorteado);
+          resultados.push(`${participantes[i]} sorteou ${sorteado}`);
+        }
+
+        // Exibe os resultados
+        resultados.forEach(resultado => {
+          const li = document.createElement('li');
+          li.textContent = resultado;
+          resultadoList.appendChild(li);
+        });
+
+        // Solicita o número de WhatsApp para cada participante e cria links
+        const linksWhatsApp = [];
+        amigosSorteados.forEach((amigoSorteado, index) => {
+          const telefone = prompt(`Digite o número do WhatsApp de ${amigoSorteado} (formato internacional, ex: 5511999999999):`);
+          const mensagem = encodeURIComponent(`Olá, ${amigoSorteado}! Você foi sorteado(a) no Amigo Secreto! Não conte para ninguém!`);
+          const linkWhatsApp = `https://wa.me/${telefone}?text=${mensagem}`;
+          linksWhatsApp.push(linkWhatsApp);
+        });
+
+        // Exibe os links para WhatsApp
+        const linkList = document.createElement('ul');
+        linksWhatsApp.forEach(link => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${link}" target="_blank">Enviar mensagem para o WhatsApp</a>`;
+          linkList.appendChild(li);
+        });
+        resultadoSection.appendChild(linkList);
+
+        document.getElementById('resetar').style.display = 'inline-block';
+      }, 2000);
+    });
+
+    document.getElementById('resetar').addEventListener('click', function () {
+      participantes = [];
+      document.getElementById('lista-participantes').innerHTML = '';
+      document.getElementById('resultado').innerHTML = '';
+      document.getElementById('carregando').style.display = 'none';
+      document.querySelector('.resultado-section').style.display = 'none';
+      document.getElementById('resetar').style.display = 'none';
+      document.getElementById('sortear').disabled = true;
+      document.querySelector('.form-section').style.display = 'block';
+    });
+
+    document.getElementById('voltar').addEventListener('click', function () {
+      document.querySelector('.resultado-section').style.display = 'none';
+      document.querySelector('.form-section').style.display = 'block';
+      document.getElementById('resetar').style.display = 'none';
+      document.getElementById('sortear').disabled = true;
+      document.getElementById('lista-participantes').innerHTML = '';
+    });
+  </script>
+</body>
+</html>
